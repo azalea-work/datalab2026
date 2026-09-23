@@ -13,13 +13,13 @@
 
  /*
  * bitAnd - x & y using only ~ and |
- * Example: bitAnd(4, 5) = 4
+ * Example: bitAnd(4, 5) = 4 0100 0101 0100
  * Legal ops: ~ |
  * Max ops: 7
  * Difficulty: 1
  */
 int bitAnd(int x, int y) {
-    return 2;
+    return ~(~x | ~y);;
 }
 
 /*
@@ -30,14 +30,14 @@ int bitAnd(int x, int y) {
  *   Difficulty: 1
  */
 int bitXor(int x, int y) {
-    return 2;
+    return ~(~x&~y)&~(x&y);
 }
 
 /*
  * samesign - Determines if two integers have the same sign.
  *   0 is not positive, nor negative
  *   Example: samesign(0, 1) = 0, samesign(0, 0) = 1
- *            samesign(-4, -5) = 1, samesign(-4, 5) = 0
+ *            samesign(-4, -5) = 1, samesign(-4, 5) = 0 1100 1011 0101
  *   Legal ops: >> << ! ^ && if else &
  *   Max ops: 12
  *   Difficulty: 2
@@ -50,7 +50,10 @@ int bitXor(int x, int y) {
  *   1 if x and y have the same sign , 0 otherwise.
  */
 int samesign(int x, int y) {
-    return 2;
+    if (!(x|y)) return 1;
+    else if ((!x)^(!y)) return 0;
+        else if (!(x>>31)^(y>>31)) return 1;
+            else return 0;
 }
 
 /*
@@ -63,7 +66,22 @@ int samesign(int x, int y) {
  *   Difficulty: 4
  */
 int logtwo(int v) {
-    return 2;
+    int ans=0;
+    int h16=(v>>16)>0;
+    ans=ans|(h16<<4);
+    v=v>>(h16<<4);
+    int h8=(v>>8)>0;
+    ans=ans|(h8<<3);
+    v=v>>(h8<<3);
+    int h4=(v>>4)>0;
+    ans=ans|(h4<<2);
+    v=v>>(h4<<2);
+    int h2=(v>>2)>0;
+    ans=ans|(h2<<1);
+    v=v>>(h2<<1);
+    int h1=(v>>1)>0;
+    ans=ans|h1
+    return ans;
 }
 
 /*
@@ -76,7 +94,17 @@ int logtwo(int v) {
  *    Difficulty: 2
  */
 int byteSwap(int x, int n, int m) {
-    return 2;
+    int n_shift=n<<3;
+    int m_shift=m<<3;
+    int n_byte=(x>>n_shift)&0xFF;
+    int m_byte=(x>>m_shift)&0xFF;
+    int n_mask=~(0xFF<<n_shift);
+    int m_mask=~(0xFF<<m_shift);
+    x=x&n_mask;
+    x=x&m_mask;
+    x=x|(n_byte<<m_shift);
+    x=x|(m_byte<<n_shift);
+    return x;
 }
 
 /*
@@ -88,7 +116,14 @@ int byteSwap(int x, int n, int m) {
  *   Difficulty: 3
  */
 unsigned reverse(unsigned v) {
-    return 2;
+    unsigned result=0;
+    int i;
+    for(i=0;i<32;i++){
+        result=result<<1;
+        result=result|(v&1);
+        v=v>>1;
+    }
+    return result;
 }
 
 /*
@@ -100,7 +135,10 @@ unsigned reverse(unsigned v) {
  *   Difficulty: 3
  */
 int logicalShift(int x, int n) {
-    return 2;
+    int x_shift=x>>n;
+    int high_1=(1<<31)>>(n+`0);
+    int mask=~high_1;
+    return x_shift&mask;
 }
 
 /*
@@ -112,7 +150,24 @@ int logicalShift(int x, int n) {
  *   Difficulty: 4
  */
 int leftBitCount(int x) {
-    return 2;
+    int ans=0;
+    int mask;
+    int is_all_1;
+    is_all_1=!(~x(>>16));
+    ans+=is_all_1<<4;
+    x=x<<(is_all_1<<4);
+    is_all_1=!(~(x>>24));
+    ans+=is_all_1<<3;
+    x=x<<(is_all_1<<3);
+    is_all_1=!(~(x>>28));
+    ans+=is_all_1<<2;
+    x=x<<(is_all_1<<2);
+    is_all_1=!(~(x>>30));
+    ans+=is_all_1<<1;
+    x=x<<(is_all_1<<1);
+    is_all_1=!(~(x>>31));
+    ans+=is_all_1;
+    return ans;
 }
 
 /*
