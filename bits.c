@@ -153,7 +153,7 @@ int leftBitCount(int x) {
     int ans=0;
     int mask;
     int is_all_1;
-    is_all_1=!(~x(>>16));
+    is_all_1=!(~(x>>16));
     ans+=is_all_1<<4;
     x=x<<(is_all_1<<4);
     is_all_1=!(~(x>>24));
@@ -165,8 +165,12 @@ int leftBitCount(int x) {
     is_all_1=!(~(x>>30));
     ans+=is_all_1<<1;
     x=x<<(is_all_1<<1);
-    is_all_1=!(~(x>>31));
-    ans+=is_all_1;
+    int high=(x>>31)&1;
+    ans=ans+high;
+    mask=~(high+~0);
+    x=x&mask;
+    x=x<<1;
+    ans=ans+((x>>31)&1);
     return ans;
 }
 
