@@ -183,7 +183,36 @@ int leftBitCount(int x) {
  *   Difficulty: 4
  */
 unsigned float_i2f(int x) {
-    return 2;
+    unsigned sign,exp,frac,abs_x,tmp;
+    int shift=0,bias=127,round_bit,sticky;
+    if(x==0) return 0;
+    sign=(x>>31)&1;
+    if(sign==0) abs_x=x;
+    else abs_x=~x+1;
+    tmp=abs_x;
+    while(tmp>1){
+        tmp>>=1;
+        shift++;
+    }
+    exp=shift+bias;
+    if(shift<=23) frac=abs_x<<(23-shift);
+    else {
+        int rshift=shift-23;
+        frac=abs_x>>rshift;
+        tmp=(abs_x>>(rshift-1))&1;
+        round_bit=tmp;
+        sticky=(abs_x&(1<<(rshift-1)-1))!=0;
+        if(round_bit&&(sticky||(frac&1))){
+            frac++;
+            if(frac>>23){
+                frac=0;
+                exp++;
+            }
+        }
+        frac&=0x7FFFFF;
+
+    }
+    return (sign<<31)|(exp<<23)|frac;
 }
 
 /*
@@ -198,7 +227,10 @@ unsigned float_i2f(int x) {
  *   Difficulty: 4
  */
 unsigned floatScale2(unsigned uf) {
-    return 2;
+    unsigned exp=(uf>>23)&0xFF;
+    if(exp==0) return (uf&0x807FFFFF)|((uf&0x007FFFFF)<<1);
+    if(exp==0xFF) return uf;
+    return uf+0x00800000;
 }
 
 /*
@@ -215,7 +247,17 @@ unsigned floatScale2(unsigned uf) {
  *   Difficulty: 3
  */
 int float64_f2i(unsigned uf1, unsigned uf2) {
-    return 2;
+    int sign=uf2>>31;
+    int exp=(uf2>>20)&0x7FF;
+    int E=exp-1023;
+    if(E<0) return 0;
+    if(exp==0) return 0;
+    if(E>30) return 0x80000000;
+    unsigned weishu=(1<<31)|((uf2&0xFFFFF)<<11)|(uf1>>21)
+    int shift=31-E;
+    int ans=weishu>>shift;
+    if(sign) ans=~ans+1;
+    return ans;
 }
 
 /*
@@ -232,5 +274,8 @@ int float64_f2i(unsigned uf1, unsigned uf2) {
  *   Difficulty: 4
  */
 unsigned floatPower2(int x) {
-    return 2;
+    if(x>=128) return 0x7F800000;
+    if(x<-149) return 0;
+    if(x<-126) return 1<<(x+149);
+    return (x+127)<<23;
 }
