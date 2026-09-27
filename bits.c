@@ -50,10 +50,9 @@ int bitXor(int x, int y) {
  *   1 if x and y have the same sign , 0 otherwise.
  */
 int samesign(int x, int y) {
-    if (!(x|y)) return 1;
-    else if ((!x)^(!y)) return 0;
-        else if (!(x>>31)^(y>>31)) return 1;
-            else return 0;
+    if(!x) return !y;
+    if(!y) return 0;
+    return !(x>>31)^(y>>31);
 }
 
 /*
@@ -68,8 +67,8 @@ int samesign(int x, int y) {
 int logtwo(int v) {
     int ans=0;
     int h16=(v>>16)>0;
-    ans=ans|(h16<<4);
-    v=v>>(h16<<4);
+    ans=h16<<4;
+    v=v>>ans;
     int h8=(v>>8)>0;
     ans=ans|(h8<<3);
     v=v>>(h8<<3);
@@ -80,7 +79,7 @@ int logtwo(int v) {
     ans=ans|(h2<<1);
     v=v>>(h2<<1);
     int h1=(v>>1)>0;
-    ans=ans|h1
+    ans=ans|h1;
     return ans;
 }
 
@@ -117,11 +116,12 @@ int byteSwap(int x, int n, int m) {
  */
 unsigned reverse(unsigned v) {
     unsigned result=0;
-    int i;
-    for(i=0;i<32;i++){
+    int i=32;
+    while(i){
         result=result<<1;
         result=result|(v&1);
         v=v>>1;
+        i-=1;
     }
     return result;
 }
@@ -136,8 +136,7 @@ unsigned reverse(unsigned v) {
  */
 int logicalShift(int x, int n) {
     int x_shift=x>>n;
-    int high_1=(1<<31)>>(n+`0);
-    int mask=~high_1;
+    int mask=~(((1<<31)>>n)<<1);
     return x_shift&mask;
 }
 
@@ -201,7 +200,7 @@ unsigned float_i2f(int x) {
         frac=abs_x>>rshift;
         tmp=(abs_x>>(rshift-1))&1;
         round_bit=tmp;
-        sticky=(abs_x&(1<<(rshift-1)-1))!=0;
+        sticky=(abs_x&((1<<(rshift-1))-1))!=0;
         if(round_bit&&(sticky||(frac&1))){
             frac++;
             if(frac>>23){
@@ -251,9 +250,9 @@ int float64_f2i(unsigned uf1, unsigned uf2) {
     int exp=(uf2>>20)&0x7FF;
     int E=exp-1023;
     if(E<0) return 0;
-    if(exp==0) return 0;
+    if(!exp) return 0;
     if(E>30) return 0x80000000;
-    unsigned weishu=(1<<31)|((uf2&0xFFFFF)<<11)|(uf1>>21)
+    unsigned weishu=(1<<31)|((uf2&0xFFFFF)<<11)|(uf1>>21);
     int shift=31-E;
     int ans=weishu>>shift;
     if(sign) ans=~ans+1;
