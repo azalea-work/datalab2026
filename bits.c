@@ -37,7 +37,7 @@ int bitXor(int x, int y) {
  * samesign - Determines if two integers have the same sign.
  *   0 is not positive, nor negative
  *   Example: samesign(0, 1) = 0, samesign(0, 0) = 1
- *            samesign(-4, -5) = 1, samesign(-4, 5) = 0 1100 1011 0101
+ *            samesign(-4, -5) = 1, samesign(-4, 5) = 0 
  *   Legal ops: >> << ! ^ && if else &
  *   Max ops: 12
  *   Difficulty: 2
@@ -52,7 +52,7 @@ int bitXor(int x, int y) {
 int samesign(int x, int y) {
     if(!x) return !y;
     if(!y) return 0;
-    return !(x>>31)^(y>>31);
+    return !((x>>31)^(y>>31));
 }
 
 /*
@@ -183,35 +183,36 @@ int leftBitCount(int x) {
  */
 unsigned float_i2f(int x) {
     unsigned sign,exp,frac,abs_x,tmp;
-    int shift=0,bias=127,round_bit,sticky;
+    int shift=-1,bias=127,round_bit,sticky;
     if(x==0) return 0;
-    sign=(x>>31)&1;
-    if(sign==0) abs_x=x;
-    else abs_x=~x+1;
+    sign=x&0x80000000;
+    if(sign) abs_x=~x+1;
+    else abs_x=x;
     tmp=abs_x;
-    while(tmp>1){
+    while(tmp){
         tmp>>=1;
         shift++;
     }
     exp=shift+bias;
-    if(shift<=23) frac=abs_x<<(23-shift);
+    if(shift<=23) frac=(abs_x<<(23-shift))&0x7FFFFF;
     else {
         int rshift=shift-23;
-        frac=abs_x>>rshift;
+        frac=(abs_x>>rshift)&0x7FFFFF;
         tmp=(abs_x>>(rshift-1))&1;
         round_bit=tmp;
-        sticky=(abs_x&((1<<(rshift-1))-1))!=0;
-        if(round_bit&&(sticky||(frac&1))){
-            frac++;
-            if(frac>>23){
-                frac=0;
-                exp++;
-            }
+        sticky=abs_x&((1<<(rshift-1))-1);
+        if(round_bit){
+            if(sticky+(frac&1)){
+                frac++;
+                if(frac>>23){
+                    frac=0;
+                    exp++;
+                }
+            }            
         }
-        frac&=0x7FFFFF;
-
+        
     }
-    return (sign<<31)|(exp<<23)|frac;
+    return sign|(exp<<23)|frac;
 }
 
 /*
@@ -227,7 +228,7 @@ unsigned float_i2f(int x) {
  */
 unsigned floatScale2(unsigned uf) {
     unsigned exp=(uf>>23)&0xFF;
-    if(exp==0) return (uf&0x807FFFFF)|((uf&0x007FFFFF)<<1);
+    if(exp==0) return (uf&0x80000000)|((uf&0x007FFFFF)<<1);
     if(exp==0xFF) return uf;
     return uf+0x00800000;
 }
